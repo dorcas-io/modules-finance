@@ -1,33 +1,39 @@
 <?php
 
-/*Route::group(['namespace' => 'Dorcas\ModulesFinance\Http\Controllers', 'middleware' => ['web']], function() {
-    Route::get('sales', 'ModulesFinanceController@index')->name('sales');
-});*/
-
-
-
-
-Route::group(['middleware' => ['auth'], 'namespace' => 'Finance', 'prefix' => 'apps/finance'], function () {
-    Route::get('/', 'Accounts@index')->name('apps.finance');
-    Route::get('/entries', 'Entries@index')->name('apps.finance.entries');
-    Route::post('/entries', 'Entries@create');
-    Route::get('/entries/{id}', 'Entries@showEntry')->name('apps.finance.entry.confirmation');
-    Route::post('/entries/{id}', 'Entries@update');
-    
-    Route::group(['middleware' => ['pay_gate']], function () {
-        Route::get('/reports', 'Reports@index')->name('apps.finance.reports');
-        Route::get('/reports/configure', 'ConfigureReport@index')->name('apps.finance.reports.configure');
-        Route::post('/reports/configure', 'ConfigureReport@configure');
-        Route::get('/reports/configure/{id}', 'ConfigureReport@index');
-        Route::post('/reports/configure/{id}', 'ConfigureReport@configure');
-        Route::get('/reports/{id}', 'Reports@showReportsManager')->name('apps.finance.reports.documents');
-    
-        Route::get('/transtrak', 'Transtrak@index')->name('apps.finance.transtrak');
-    });
-    
-    Route::get('/{id}', 'Accounts@index');
-    Route::post('/{id}', 'Accounts@create');
+Route::group(['namespace' => 'Dorcas\ModulesFinance\Http\Controllers', 'middleware' => ['web','auth'], 'prefix' => 'mfn'], function() {
+    Route::get('finance-main', 'ModulesFinanceController@index')->name('finance-main');
+    Route::get('/finance-accounts', 'ModulesFinanceController@accounts')->name('finance-accounts');
+    Route::get('/finance-accounts/{id}', 'ModulesFinanceController@accounts');
+    Route::post('/finance-accounts/{id}', 'ModulesFinanceController@accounts_create');
+    Route::get('/finance-entries', 'ModulesFinanceController@entries')->name('finance-entries');
+    Route::post('/finance-entries', 'ModulesFinanceController@entries_create');
+    Route::get('/finance-entries/{id}', 'ModulesFinanceController@entries_show')->name('finance-entries-confirmation');
+    Route::get('/finance-reports', 'ModulesFinanceController@reports')->name('finance-reports');
+    Route::get('/finance-reports/{id}', 'ModulesFinanceController@reports_show_manager')->name('finance-reports-show');
+    Route::get('/finance-reports-configure', 'ModulesFinanceController@reports_configure')->name('apps.finance.reports.configure');
+    Route::post('/finance-reports-configure', 'ModulesFinanceController@reports_configuration');
+    Route::get('/finance-reports-configure/{id}', 'ModulesFinanceController@reports_configure');
+    Route::post('/finance-reports-configure/{id}', 'ModulesFinanceController@reports_configuration');
+    Route::post('/finance-install', 'ModulesFinanceController@accounts_install');
+    Route::put('/finance-accounts/{id}', 'ModulesFinanceController@accounts_update');
+    Route::get('/finance-entries-search', 'ModulesFinanceController@entries_search');
+    Route::delete('/finance-entries/{id}', 'ModulesFinanceController@entries_delete');
+    Route::put('/finance-entries/{id}', 'ModulesFinanceController@entries_update');
+    Route::post('/finance-reports', 'ModulesFinanceController@reports_create');
 });
+
+
+/*
+
+    Route::delete('/finance/accounts/{id}', 'Finance\Accounts@delete');
+
+
+    
+    Route::post('/finance/transtrak/fetch', 'Finance\Transtrak@fetch');
+    Route::post('/finance/transtrak/login', 'Finance\Transtrak@login');
+    Route::post('/finance/transtrak/enable-auto-processing', 'Finance\Transtrak@enableAutoProcessing');
+
+*/
 
 
 ?>
