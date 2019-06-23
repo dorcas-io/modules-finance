@@ -20,7 +20,9 @@ class ModulesFinanceController extends Controller {
         $this->data = [
             'page' => ['title' => config('modules-finance.title')],
             'header' => ['title' => config('modules-finance.title')],
-            'selectedMenu' => 'sales'
+            'selectedMenu' => 'modules-finance',
+            'submenuConfig' => 'navigation-menu.modules-finance.sub-menu',
+            'submenuAction' => ''
         ];
     }
 
@@ -41,6 +43,13 @@ class ModulesFinanceController extends Controller {
      */
     public function accounts(Request $request, Sdk $sdk, string $id = null)
     {
+
+        $this->data['page']['title'] .= ' &rsaquo; Accounts';
+        $this->data['header']['title'] = 'Accounts Manager';
+        $this->data['selectedSubMenu'] = 'finance-accounts';
+        $this->data['submenuAction'] = '<a id="create_subaccount" href="#" v-on:click.prevent="createSubAccount" class="btn btn-primary btn-block">Add SubAccount</a>';
+
+
         $this->setViewUiResponse($request);
         $accounts = $this->getFinanceAccounts($sdk);
         $mode = 'topmost';
@@ -58,9 +67,7 @@ class ModulesFinanceController extends Controller {
                 return $account->parent_account['data']['id'] === $id;
             });
             $this->data['baseAccount'] = $baseAccount;
-            $this->data['page']['header']['title'] .= ' - ' . $baseAccount->display_name;
-            $this->data['breadCrumbs']['crumbs'][1]['isActive'] = false;
-            $this->data['breadCrumbs']['crumbs'][] = ['text' => 'Sub-Accounts', 'href' => '#', 'isActive' => true];
+            $this->data['header']['title'] .= ' - ' . $baseAccount->display_name;
             
         } elseif (!empty($accounts)) {
             $accounts = $accounts->filter(function ($account) {
@@ -164,6 +171,23 @@ class ModulesFinanceController extends Controller {
      */
     public function entries(Request $request, Sdk $sdk)
     {
+
+        $this->data['page']['title'] .= ' &rsaquo; Entries';
+        $this->data['header']['title'] = 'Account Entries';
+        $this->data['selectedSubMenu'] = 'finance-entries';
+        $this->data['submenuAction'] = '
+            <div class="dropdown"><button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">Actions</button>
+                <div class="dropdown-menu">
+                <a href="#" data-toggle="modal" data-target="#entries-add-modal" class="dropdown-item">Add a New Entry</a>
+                <a href="#" data-toggle="modal" data-target="#entries-import-modal" class="dropdown-item">Import Entries From CSV</a>
+                <a href="#" class="dropdown-item" v-if="accounts.length > 1" v-on:click.prevent="setPresentEntry(\'debit\')">Real Debit/Expense</a>
+                <a href="#" class="dropdown-item" v-if="accounts.length > 1" v-on:click.prevent="setFutureEntry(\'debit\')">Future Debit/Expense</a>
+                <a href="#" class="dropdown-item" v-if="accounts.length > 1" v-on:click.prevent="setPresentEntry(\'credit\')">Real Credit/Income</a>
+                <a href="#" class="dropdown-item" v-if="accounts.length > 1" v-on:click.prevent="setFutureEntry(\'credit\')">Future Credit/Income</a>
+                </div>
+            </div>
+        ';
+
         $this->setViewUiResponse($request);
         $accounts = $this->getFinanceAccounts($sdk);
         if (empty($accounts) || $accounts->count() === 0) {
@@ -189,8 +213,7 @@ class ModulesFinanceController extends Controller {
                 $this->data['addEntryModalTitle'] .= $baseAccount->parent_account['data']['display_name'] . ' > ';
                 $appendName .= ' (' . $baseAccount->parent_account['data']['display_name'].')';
             }
-            $this->data['page']['header']['title'] .= ' - ' . $appendName;
-            $this->data['breadCrumbs']['crumbs'][1][''] = false;
+            $this->data['header']['title'] .= ' - ' . $appendName;
             $this->data['addEntryModalTitle'] .= $baseAccount->display_name;
             
         }
@@ -395,6 +418,11 @@ class ModulesFinanceController extends Controller {
      */
     public function reports(Request $request, Sdk $sdk)
     {
+        $this->data['page']['title'] .= ' &rsaquo; Reports';
+        $this->data['header']['title'] = 'Reports Manager';
+        $this->data['selectedSubMenu'] = 'finance-reports';
+        $this->data['submenuAction'] = '<a href="'.route('finance-reports-configure').'" class="btn btn-primary btn-block">Configure A Report</a>';
+
         $this->setViewUiResponse($request);
         $accounts = $this->getFinanceAccounts($sdk);
         if (empty($accounts) || $accounts->count() === 0) {
@@ -415,11 +443,7 @@ class ModulesFinanceController extends Controller {
     public function reports_show_manager(Request $request, Sdk $sdk, string $id)
     {
         $this->setViewUiResponse($request);
-        $this->data['breadCrumbs']['crumbs'][1]['isActive'] = false;
-        $this->data['breadCrumbs']['crumbs'][] = [
-            'text' => 'Report Manager', 'href' => route('apps.finance.reports.documents', [$id]), 'isActive' => true
-        ];
-        $this->data['page']['title'] = 'Finance: Reports Manager';
+        $this->data['page']['title'] = 'Reports Manager';
         $reports = $this->getFinanceReportConfigurations($sdk);
         if (empty($reports)) {
             return redirect()->route('finance-reports');
@@ -429,7 +453,7 @@ class ModulesFinanceController extends Controller {
         if (empty($report)) {
             abort(404, 'Page not found');
         }
-        dd($report);
+        //dd($report);
         $this->data['page']['header']['title'] = $report->display_name;
         return view('modules-finance::reports-manager', $this->data);
     }
