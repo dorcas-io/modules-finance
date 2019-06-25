@@ -128,6 +128,7 @@
                 } else {
                     this.defaultCurrency = 'NGN';
                 }
+                //console.log(this.ui_configuration)
             },
             computed: {
                 filteredAccounts: function () {
@@ -139,6 +140,12 @@
                         return typeof account.sub_accounts !== 'undefined' && account.sub_accounts.data.length > 0 &&
                             (context.allowedAccounts.length === 0 || (context.allowedAccounts.length > 0 && context.allowedAccounts.indexOf(account.id) !== -1));
                     });
+                }
+            },
+            methods:  {
+
+                onChange: function(event) {
+                    console.log(event.target.value)
                 }
             }
         });
@@ -230,7 +237,7 @@
 		            //console.log(target, target.getAttribute('data-action'));
 		            let action = target.getAttribute('data-action');
 		            //let name = target.getAttribute('data-name');
-		            //let id = target.getAttribute('data-id');
+		            let id = target.getAttribute('data-id');
 		            //let index = parseInt(target.getAttribute('data-index'), 10);
 		            /*if (isNaN(index)) {
 		                console.log('Index is not set.');
@@ -239,7 +246,7 @@
 		            console.log(action)
 		            if (action === 'view') {
 		                return true;
-		            } else if (action === 'delete') {
+		            } else if (action === 'remove') {
 		                this.delete(id);
 		            } else {
 		                return true;
@@ -306,6 +313,7 @@
             },
             mounted: function() {
             	//console.log(this.entriesCount)
+                //console.log(this.accounts)
             }
         });
 

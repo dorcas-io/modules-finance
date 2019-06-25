@@ -2,7 +2,7 @@
 	<div class="modal-dialog modal-dialog-centered modal-lg" role="document">
 		<div class="modal-content">
 			<div class="modal-header">
-				<h5 class="modal-title" id="entries-add-modalLabel">{{ $addEntryModalTitle or 'Add Account Entry' }}</h5>
+				<h5 class="modal-title" id="entries-add-modalLabel">{{ !empty($addEntryModalTitle) ? $addEntryModalTitle.' &rsaquo;  Add Entry' : 'Add Account Entry' }}</h5>
 				<button type="button" class="close" data-dismiss="modal" aria-label="Close"></button>
 			</div>
 			<div class="modal-body">
@@ -24,7 +24,7 @@
 								<label class="form-label" for="account">Account</label>
 							</div>
 							<div class="form-group col-md-4">
-		                        <select class="form-control" id="currency" name="currency" v-model="defaultCurrency" required>
+		                        <select class="form-control" id="currency" name="currency" @change="onChange($event)" v-model="defaultCurrency" required>
 		                            @foreach ($isoCurrencies as $currency)
 		                                <option value="{{ $currency['alphabeticCode'] }}">{{ $currency['currency'] }} - {{ $currency['alphabeticCode'] }}</option>
 		                            @endforeach

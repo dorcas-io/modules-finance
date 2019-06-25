@@ -2,7 +2,7 @@
 	<div class="modal-dialog modal-dialog-centered" role="document">
 		<div class="modal-content">
 			<div class="modal-header">
-				<h5 class="modal-title" id="accounts-edit-modalLabel">Edit Account</h5>
+				<h5 class="modal-title" id="accounts-edit-modalLabel">Edit Account: @{{ accounts[account_index].display_name }} (@{{ accounts[account_index].entry_type }})</h5>
 				<button type="button" class="close" data-dismiss="modal" aria-label="Close"></button>
 			</div>
 			<div class="modal-body">
@@ -26,7 +26,7 @@
 			</div>
 			<div class="modal-footer">
 				<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-				<button type="submit" name="save_account" form="form-accounts-edit" class="btn btn-primary" name="action" v-if="!is_processing">Save Changes</button>
+				<button type="submit" name="save_account" form="form-accounts-edit" class="btn btn-primary" name="action" :class="{ 'btn-loading':is_processing }">Save Changes</button>
 			</div>
 		</div>
 	</div>

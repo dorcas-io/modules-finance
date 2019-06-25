@@ -19,13 +19,16 @@
                             
                         </div> -->
     		            <div class="card-footer">
-    		                <a href="#" v-on:click.prevent="edit_account(index)" class="btn btn-indigo btn-sm">Edit Account</a>
-                            &nbsp;
-    		                <a v-bind:href="'{{ route('finance-accounts') }}/' + account.id" v-if="mode === 'topmost'" class="btn btn-cyan btn-sm">View Sub Accounts</a>
-                            &nbsp;
-    		                <a v-bind:href="'{{ route('finance-entries') }}?account=' + account.id" class="btn btn-success btn-sm">View Entries</a>
-                            &nbsp;
-    		                <a href="#" v-on:click.prevent="toggleVisibility(index)" v-bind:class="{'btn-danger': account.is_visible, 'btn-info': !account.is_visible}" class="btn btn-sm">@{{ account.is_visible ? 'Hide (from Reports)' : 'Show (on Reports)' }}</a>
+    		                <p>
+                                <a href="#" v-on:click.prevent="edit_account(index)" class="btn btn-indigo btn-sm">Edit Account</a>
+                                &nbsp;
+        		                <a v-bind:href="'{{ route('finance-accounts') }}/' + account.id" v-if="mode === 'topmost'" class="btn btn-cyan btn-sm">View Sub Accounts</a>
+                            </p>
+                            <p>
+        		                <a v-bind:href="'{{ route('finance-entries') }}?account=' + account.id" class="btn btn-success btn-sm">View Entries</a>
+                                &nbsp;
+        		                <a href="#" v-on:click.prevent="toggleVisibility(index)" v-bind:class="{'btn-danger': account.is_visible, 'btn-info': !account.is_visible}" class="btn btn-sm">@{{ account.is_visible ? 'Hide (from Reports)' : 'Show (on Reports)' }}</a>
+                            </p>
     		            </div>
     		        </div>
     		    </div>
@@ -43,11 +46,11 @@
                     @endslot
                 @endcomponent
             </div>
+            @include('modules-finance::modals.accounts-edit')
+            @if (!empty($baseAccount))
+                @include('modules-finance::modals.accounts-sub')
+            @endif
 		</div>
-        @include('modules-finance::modals.accounts-edit')
-        @if (!empty($baseAccount))
-            @include('modules-finance::modals.accounts-sub')
-        @endif
 	</div>
 @endsection
 @section('body_js')
@@ -59,10 +62,11 @@
                 is_processing: false,
                 mode: '{{ empty($mode) ? "topmost" : $mode }}',
                 enableCreateSubAccountTrigger: '{{ !empty($mode) && $mode !== "topmost" ? "yes" : "no" }}',
-                account_index: ''
+                account_index: 0
             },
             methods: {
                 edit_account: function (index) {
+                    //console.log(index)
                     this.account_index = index;
                     $('#accounts-edit-modal').modal('show');
                 },
@@ -81,6 +85,8 @@
                             //console.log(response);
                             context.is_processing = false;
                             context.accounts.splice(index, 1, response.data);
+                            $('#accounts-edit-modal').modal('hide');
+                            swal("Success", "Successful updated the Account", "success");
                         })
                         .catch(function (error) {
                             var message = '';
