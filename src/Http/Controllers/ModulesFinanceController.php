@@ -11,8 +11,11 @@ use Hostville\Dorcas\Sdk;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
 use League\Csv\Reader;
+//use App\Dorcas\Support\CreatesFinanceReports;
 
 class ModulesFinanceController extends Controller {
+
+    //use CreatesFinanceReports;
 
     public function __construct()
     {
@@ -520,5 +523,14 @@ class ModulesFinanceController extends Controller {
     {
     
     }
+
+    public function creator(Request $request)
+    {
+        $this->validate($request, [
+            'id' => 'required|string'
+        ]);
+        # validate the request
+    }
+
 
 }

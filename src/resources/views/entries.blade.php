@@ -219,7 +219,7 @@
             },
             methods: {
                 clickAction: function (event) {
-                    console.log(event.target);
+                    //console.log(event.target);
                     /*var target = event.target.tagName.toLowerCase() === 'i' ? event.target.parentNode : event.target;
                     var attrs = Hub.utilities.getElementAttributes(target);
                     // get the attributes
@@ -243,7 +243,7 @@
 		                console.log('Index is not set.');
 		                return;
 		            }*/
-		            console.log(action)
+		            //console.log(action)
 		            if (action === 'view') {
 		                return true;
 		            } else if (action === 'remove') {
@@ -256,7 +256,7 @@
 
                 },
                 delete: function (id) {
-                    console.log(id);
+                    //console.log(id);
                     //var id = attributes['data-id'] || null;
                     if (id === null) {
                         return false;

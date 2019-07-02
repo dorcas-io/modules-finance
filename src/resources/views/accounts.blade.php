@@ -4,65 +4,65 @@
 @endsection
 @section('body_content_main')
 @include('layouts.blocks.tabler.alert')
-	<div class="row">
-	    @include('layouts.blocks.tabler.sub-menu')
+<div class="row">
+    @include('layouts.blocks.tabler.sub-menu')
 
-	    <div class="row col-md-9" id="finance-accounts">
-            <div class="row" v-if="accounts.length > 0">
-    		    <div class="col-md-12 col-lg-6" v-for="(account, index) in accounts" :key="account.id">
-    		        <div class="card">
-    		            <div class="card-status bg-indigo"></div>
-    		            <div class="card-header">
-    		                <h3 class="card-title">@{{ account.display_name }} (@{{ account.entry_type.title_case() }})</h3>
-    		            </div>
-                        <!-- <div class="card-body">
-                            
-                        </div> -->
-    		            <div class="card-footer">
-    		                <p>
-                                <a href="#" v-on:click.prevent="edit_account(index)" class="btn btn-indigo btn-sm">Edit Account</a>
-                                &nbsp;
-        		                <a v-bind:href="'{{ route('finance-accounts') }}/' + account.id" v-if="mode === 'topmost'" class="btn btn-cyan btn-sm">View Sub Accounts</a>
-                            </p>
-                            <p>
-        		                <a v-bind:href="'{{ route('finance-entries') }}?account=' + account.id" class="btn btn-success btn-sm">View Entries</a>
-                                &nbsp;
-        		                <a href="#" v-on:click.prevent="toggleVisibility(index)" v-bind:class="{'btn-danger': account.is_visible, 'btn-info': !account.is_visible}" class="btn btn-sm">@{{ account.is_visible ? 'Hide (from Reports)' : 'Show (on Reports)' }}</a>
-                            </p>
-    		            </div>
-    		        </div>
-    		    </div>
-            </div>
-            <div class="col-md-12" v-if="accounts.length === 0">
-                @component('layouts.blocks.tabler.empty-fullpage')
-                    @slot('title')
-                        Setup Finance
-                    @endslot
-                    You have not yet setup Finance, you can use the button below to do that now.
-                    @slot('buttons')
-                        <a href="#" v-on:click.prevent="installFinance" class="btn btn-primary">
-                            Setup Finance
-                        </a>
-                    @endslot
-                @endcomponent
-            </div>
-            @include('modules-finance::modals.accounts-edit')
-            @if (!empty($baseAccount))
-                @include('modules-finance::modals.accounts-sub')
-            @endif
-		</div>
+    <div class="row col-md-9" id="finance-accounts-profile">
+        <div class="row" v-if="accountsAvailable">
+		    <div class="col-md-12 col-lg-6" v-for="(account, index) in accounts" :key="account.id">
+		        <div class="card">
+		            <div class="card-status bg-indigo"></div>
+		            <div class="card-header">
+		                <h3 class="card-title">@{{ account.display_name }} (@{{ account.entry_type.title_case() }})</h3>
+		            </div>
+                    <!-- <div class="card-body">
+                        
+                    </div> -->
+		            <div class="card-footer">
+		                <p>
+                            <a href="#" v-on:click.prevent="edit_account(index)" class="btn btn-indigo btn-sm">Edit Account</a>
+                            &nbsp;
+    		                <a v-bind:href="'{{ route('finance-accounts') }}/' + account.id" v-if="mode === 'topmost'" class="btn btn-cyan btn-sm">View Sub Accounts</a>
+                        </p>
+                        <p>
+    		                <a v-bind:href="'{{ route('finance-entries') }}?account=' + account.id" class="btn btn-success btn-sm">View Entries</a>
+                            &nbsp;
+    		                <a href="#" v-on:click.prevent="toggleVisibility(index)" v-bind:class="{'btn-danger': account.is_visible, 'btn-info': !account.is_visible}" class="btn btn-sm">@{{ account.is_visible ? 'Hide (from Reports)' : 'Show (on Reports)' }}</a>
+                        </p>
+		            </div>
+		        </div>
+		    </div>
+        </div>
+        <div class="row col-md-9" v-if="!accountsAvailable">
+            @component('layouts.blocks.tabler.empty-fullpage')
+                @slot('title')
+                    Setup Finance
+                @endslot
+                You have not yet setup your Accounts, you can use the button above to do that now.
+                @slot('buttons')
+                    <a href="#" v-on:click.prevent="installFinance" class="btn btn-primary" :class="{'btn-loading':is_processing}">Setup Accounts</a>
+                @endslot
+            @endcomponent
+        </div>
+        
 	</div>
+</div>
 @endsection
 @section('body_js')
     <script type="text/javascript">
-        var vm = new Vue({
-            el: '#finance-accounts',
+        var vmFinance = new Vue({
+            el: '#finance-accounts-profile',
             data: {
                 accounts: {!! json_encode($accounts ?: []) !!},
                 is_processing: false,
                 mode: '{{ empty($mode) ? "topmost" : $mode }}',
                 enableCreateSubAccountTrigger: '{{ !empty($mode) && $mode !== "topmost" ? "yes" : "no" }}',
                 account_index: 0
+            },
+            computed: {
+                accountsAvailable: function() {
+                    return this.accounts.length > 0;
+                }
             },
             methods: {
                 edit_account: function (index) {
@@ -191,8 +191,9 @@
             },
             mounted: function() {
                 this.enableCreateSubAccount();
-                //console.log(this.accounts)
-            },
+                console.log(this.accounts.length)
+                console.log(this.accountsAvailable)
+            }
         });
         new Vue({
             el: '#sub-menu-action',
@@ -201,7 +202,7 @@
             },
             methods: {
                 createSubAccount: function () {
-                    vm.createSubAccount();
+                    vmFinance.createSubAccount();
                 }
             }
         })
