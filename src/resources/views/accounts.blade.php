@@ -44,7 +44,7 @@
                 @endslot
             @endcomponent
         </div>
-        
+        @include('modules-finance::modals.accounts-edit')
 	</div>
 </div>
 @endsection
