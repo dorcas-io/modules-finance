@@ -432,6 +432,7 @@ class ModulesFinanceController extends Controller {
             return redirect(route('finance-accounts'));
         }
         $this->data['configurations'] = $this->getFinanceReportConfigurations($sdk);
+        $this->data['reportToken'] = $sdk->getAuthorizationToken();
         # get the configured reports
         return view('modules-finance::reports', $this->data);
     }
@@ -473,6 +474,7 @@ class ModulesFinanceController extends Controller {
         })->values();
         # set the accounts to be displayed for selection
         $configured = $this->getFinanceReportConfigurations($sdk);
+        $this->data['configurations'] =  $configured;
         if (!empty($id)) {
             $report = $configured->where('id', $id)->first();
             $this->data['report'] = $report ?: null;
@@ -491,6 +493,7 @@ class ModulesFinanceController extends Controller {
     {
         $this->validate($request, [
             'report' => 'required|string|in:balance_sheet,income_statement',
+            'configured_report_title' => 'required|string',
             'accounts' => 'required|array',
             'accounts.*' => 'required|string'
         ]);
@@ -511,7 +514,7 @@ class ModulesFinanceController extends Controller {
             }
             Cache::forget('finance.report_configurations.'.$company->id);
             # forget the cache data
-            $message = ['Successfully saved the configuration for '.$request->report];
+            $message = ['Successfully saved the configuration for '.$request->configured_report_title];
             $response = (tabler_ui_html_response($message))->setType(UiResponse::TYPE_SUCCESS);
         } catch (\Exception $e) {
             $response = (tabler_ui_html_response([$e->getMessage()]))->setType(UiResponse::TYPE_ERROR);
