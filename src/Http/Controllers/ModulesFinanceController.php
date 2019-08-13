@@ -446,6 +446,11 @@ class ModulesFinanceController extends Controller {
      */
     public function reports_show_manager(Request $request, Sdk $sdk, string $id)
     {
+        $this->data['page']['title'] .= ' &rsaquo; Reports';
+        $this->data['header']['title'] = 'Reports Manager';
+        $this->data['selectedSubMenu'] = 'finance-reports';
+        $this->data['submenuAction'] = '<a href="'.route('finance-reports-configure').'" class="btn btn-primary btn-block">Configure A Report</a>';
+
         $this->setViewUiResponse($request);
         $this->data['page']['title'] = 'Reports Manager';
         $reports = $this->getFinanceReportConfigurations($sdk);
@@ -464,6 +469,11 @@ class ModulesFinanceController extends Controller {
 
     public function reports_configure(Request $request, Sdk $sdk, string $id = null)
     {
+        $this->data['page']['title'] .= ' &rsaquo; Reports Configuration';
+        $this->data['header']['title'] = 'Reports Configuration';
+        $this->data['selectedSubMenu'] = 'finance-reports';
+        $this->data['submenuAction'] = '';
+        
         $this->setViewUiResponse($request);
         $accounts = $this->getFinanceAccounts($sdk);
         if (empty($accounts) || $accounts->count() === 0) {

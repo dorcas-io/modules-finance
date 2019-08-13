@@ -14,7 +14,7 @@
         <div class="row row-cards row-deck" id="entries">
             <div class="col-sm-12">
                 <div class="table-responsive">
-                    <table class="table card-table table-vcenter text-nowrap bootstrap-table"
+                    <table class="table card-table table-vcenter text-nowrap bootstrap-table" v-if="entriesCount > 0"
                            data-pagination="true"
                            data-side-pagination="server"
                            data-show-refresh="true"
@@ -25,8 +25,7 @@
                            data-page-list="[10,25,50,100,200,300,500]"
                            data-sort-class="sortable"
                            data-search-on-enter-key="true"
-                           v-if="entriesCount > 0"
-                            id="entries-table" v-on:click="clickAction($event)">
+                           id="entries-table" v-on:click="clickAction($event)">
                         <thead>
                         <tr>
 		                    <th data-field="account_link">Account</th>
@@ -66,13 +65,14 @@
                             @endslot
                         @endcomponent
                     </div>
-                    @include('modules-finance::modals.entries-add')
-                    @include('modules-finance::modals.entries-import')
+
                 </div>
             </div>
         </div>
 
     </div>
+    @include('modules-finance::modals.entries-add')
+    @include('modules-finance::modals.entries-import')
 
 </div>
 
@@ -103,6 +103,9 @@
 	        $('.custom-datepicker').datepicker({
 	            uiLibrary: 'bootstrap4',
                 format: 'yyyy-mm-dd'
+                /*close: function (e) {
+                    vm.due_date = e.target.value;
+                }*/
 	        });
 
             /*$('#entries-add-modal').modal({
@@ -120,7 +123,8 @@
                 entry_type: '',
                 entry_period: 'present',
                 defaultCurrency: '',
-                ui_configuration: {!! json_encode($UiConfiguration) !!}
+                ui_configuration: {!! json_encode($UiConfiguration) !!},
+                defamoint: 10
             },
             mounted: function () {
                 if (typeof this.ui_configuration.currency !== 'undefined') {
@@ -128,7 +132,6 @@
                 } else {
                     this.defaultCurrency = 'NGN';
                 }
-                //console.log(this.ui_configuration)
             },
             computed: {
                 filteredAccounts: function () {
@@ -142,13 +145,13 @@
                     });
                 }
             },
-            methods:  {
-
-                onChange: function(event) {
+            methods: {
+                currencyChange: function(event) {
                     console.log(event.target.value)
                 }
             }
         });
+
         var vmImportModal = new Vue({
             el: '#entries-import-modal',
             data: {

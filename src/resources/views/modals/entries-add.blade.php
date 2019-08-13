@@ -24,7 +24,7 @@
 								<label class="form-label" for="account">Account</label>
 							</div>
 							<div class="form-group col-md-4">
-		                        <select class="form-control" id="currency" name="currency" @change="onChange($event)" v-model="defaultCurrency" required>
+		                        <select class="form-control" id="currency" name="currency" v-on:change="currencyChange($event)" v-model="defaultCurrency" required>
 		                            @foreach ($isoCurrencies as $currency)
 		                                <option value="{{ $currency['alphabeticCode'] }}">{{ $currency['currency'] }} - {{ $currency['alphabeticCode'] }}</option>
 		                            @endforeach
@@ -42,7 +42,7 @@
 		                        <label class="form-label" for="memo">Memo</label>
 							</div>
 							<div class="form-group col-md-4">
-		                        <input type="text" class="custom-datepicker" name="created_at" id="created_at">
+		                        <input type="text" class="custom-datepicker" name="created_at" id="created_at" required>
 		                        <label for="created_at">Transaction Date</label>
 							</div>
 						</div>

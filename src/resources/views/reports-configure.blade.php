@@ -43,7 +43,7 @@
                                                 <label class="custom-control custom-checkbox custom-control-inline" v-for="i in max_sub_accounts" :key="account.sub_accounts.data[i - 1].id" v-if="typeof account.sub_accounts.data[i - 1] !== 'undefined' && account.sub_accounts.data[i - 1].is_visible">
                                                     <input type="checkbox" class="custom-control-input" v-bind:id="'account_box-' + account.sub_accounts.data[i - 1].id" v-bind:value="account.sub_accounts.data[i - 1].id" name="accounts[]" :checked="is_selected(account.sub_accounts.data[i - 1].id)==='yes' ? 'checked' : false">
 
-                                                    <span class="custom-control-label" v-bind:for="'account_box-' + account.sub_accounts.data[i - 1].id">@{{ account.sub_accounts.data[i - 1].display_name }}</span>
+                                                    <span class="custom-control-label" v-bind:for="'account_box-' + account.sub_accounts.data[i - 1].id">@{{ account.sub_accounts.data[i - 1].display_name }}  @{{ is_selected(account.sub_accounts.data[i - 1].id)==='yes' ? '&#10003;' : '' }}</span>
                                                 </label>
 
                                             </div>
@@ -53,7 +53,7 @@
                             </table>
                         </div>
                         <div class="form-group col-md-12 pt-3">
-                            <input type="hidden" name="configured_report_title" id="configured_report_title" value="" required>
+                            <input type="hidden" name="configured_report_title" id="configured_report_title" :value="report_display_name" required>
                             <button class="btn btn-primary btn-block" type="submit" name="action" value="configure">
                                 Save @{{ report_display_name }} Configuration
                             </button>
@@ -120,24 +120,20 @@
                     let report_text = event.target[report_index].text
                     let report_name = event.target[report_index].value
 
-                    let chosen_config = this.configurations.find( x => x.report_name == report_name ); //get the config  with selected value
-
-                    //get  accounts under  that config
-                    let chosen_accounts = chosen_config.accounts.data
-
                     this.configure.report = report_name;
-                    this.configure.accounts = chosen_accounts.map(function (account) { return account.id; });
-
-                    console.log(this.configure.accounts)
-
                     this.report_display_name = report_text
 
-                    $("#configured_report_title").val(chosen_config.display_name);
-                    //console.log($("#configured_report_title").val())
-                    //console.log(this.configure.accounts.find( account  => account.id === 'bfa53b96-4660-11e9-929e-0a0842772036'))
+                    if (this.configurations.length>0) {
+                        let chosen_config = this.configurations.find( x => x.report_name == report_name );
+                        let chosen_accounts = chosen_config.accounts.data
+                        this.configure.accounts = chosen_accounts.map(function (account) { return account.id; });
+                        //console.log(this.configure.accounts)
 
-                    //check if there is  an  array intersect => if 
-                    //account.id
+                        $("#configured_report_title").val(chosen_config.display_name);
+                    } else {
+                        $("#configured_report_title").val(report_text);
+                    }
+
                 },
                 is_selected: function (accountId) {
                     //console.log(accountId)
@@ -164,7 +160,10 @@
                     //this.configure.accounts = chosen_accounts.map(function (account) { return account.id; });
                     //console.log(this.configure.accounts)
                 }
-                if (typeof this.configurations !== 'undefined') {
+                //console.log(this.configurations);
+                if (this.available_reports.length==0)  {
+                    this.available_reports = ['balance_sheet'];
+                } else if (this.available_reports.length > 0 && typeof this.configurations !== 'undefined') {
                     this.available_reports = this.configurations.map(function (config) { return config.report_name; });
                 }
             }

@@ -32,8 +32,9 @@
 		            </div>
 		        </div>
 		    </div>
+            @include('modules-finance::modals.accounts-edit')
         </div>
-        <div class="row col-md-9" v-if="!accountsAvailable">
+        <div class="row col-md-12" v-if="!accountsAvailable">
             @component('layouts.blocks.tabler.empty-fullpage')
                 @slot('title')
                     Setup Finance
@@ -44,7 +45,6 @@
                 @endslot
             @endcomponent
         </div>
-        @include('modules-finance::modals.accounts-edit')
 	</div>
 </div>
 @endsection
@@ -191,8 +191,8 @@
             },
             mounted: function() {
                 this.enableCreateSubAccount();
-                console.log(this.accounts.length)
-                console.log(this.accountsAvailable)
+                //console.log(this.accounts.length)
+                //console.log(this.accountsAvailable)
             }
         });
         new Vue({

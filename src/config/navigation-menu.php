@@ -13,7 +13,6 @@ return [
     'finance-reports' => [
     	'title' => 'Reports',
     	'route' => 'finance-reports',
-        'icon' => 'fe fe-bar-chart-2',
-        'visibility' => 'hide'
+        'icon' => 'fe fe-bar-chart-2'
     ]
 ];
