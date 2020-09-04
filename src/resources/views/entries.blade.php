@@ -68,10 +68,12 @@
 
                 </div>
             </div>
+            @include('modules-finance::modals.entries-confirm')
         </div>
 
     </div>
     @include('modules-finance::modals.entries-add')
+    @include('modules-finance::modals.entries-add-unconfirmed')
     @include('modules-finance::modals.entries-import')
 
 </div>
@@ -84,21 +86,6 @@
     app.currentUser = {!! json_encode($dorcasUser) !!};
 
         $(function() {
-            /*$('input[type=checkbox].check-all').on('change', function () {
-                var className = $(this).parent('div').first().data('item-class') || '';
-                if (className.length > 0) {
-                    $('input[type=checkbox].'+className).prop('checked', $(this).prop('checked'));
-                }
-            });*/
-            /*$('.custom-datepicker').pickadate({
-                today: 'Today',
-                clear: 'Clear',
-                close: 'Ok',
-                closeOnSelect: true,
-                format: 'yyyy-mm-dd',
-                container: 'body',
-                max: true
-            });*/
 
 	        $('.custom-datepicker').datepicker({
 	            uiLibrary: 'bootstrap4',
@@ -211,6 +198,15 @@
                     vmModal.entry_period = 'present';
                     this.filterAccounts(type);
                     $('#entries-add-modal').modal('show');
+                },
+                setDefaultEntry: function () {
+                    vmModal.allowedAccounts = vmModal.accounts.map(function (account) {
+                        return account.id;
+                    });
+                    vmModal.hide_cash_and_bank = false;
+                    vmModal.entry_type = '';
+                    vmModal.entry_period = 'present';
+                    $('#entries-add-modal').modal('show');
                 }
             }
         });
@@ -218,45 +214,36 @@
             el: '#entries',
             data: {
                 entriesCount: {{ $entriesCount }},
-                accounts: {!! json_encode($accounts) !!}
+                accounts: {!! json_encode($accounts) !!},
+                accounts_all: {!! json_encode($accounts_all) !!},
+                entries: {!! json_encode($entries) !!},
+                entry: '',
+                confirmed_account: '',
+                entry_processing: false
+            },
+            computed: {
+                entryDate: function () {
+                    return this.entry !== '' ? moment(this.entry.created_at).format('DD MMM, YYYY') : '' ;
+                }
+
             },
             methods: {
                 clickAction: function (event) {
-                    //console.log(event.target);
-                    /*var target = event.target.tagName.toLowerCase() === 'i' ? event.target.parentNode : event.target;
-                    var attrs = Hub.utilities.getElementAttributes(target);
-                    // get the attributes
-                    var classList = target.classList;
-                    if (classList.contains('view')) {
-                        return true;
-                    } else if (classList.contains('remove')) {
-                        this.delete(attrs);
-                    }*/
-
 		            let target = event.target;
 		            if (!target.hasAttribute('data-action')) {
 		                target = target.parentNode.hasAttribute('data-action') ? target.parentNode : target;
 		            }
-		            //console.log(target, target.getAttribute('data-action'));
 		            let action = target.getAttribute('data-action');
-		            //let name = target.getAttribute('data-name');
 		            let id = target.getAttribute('data-id');
-		            //let index = parseInt(target.getAttribute('data-index'), 10);
-		            /*if (isNaN(index)) {
-		                console.log('Index is not set.');
-		                return;
-		            }*/
-		            //console.log(action)
-		            if (action === 'view') {
-		                return true;
+                    let index = target.getAttribute('data-index');
+                    //console.log(action)
+		            if (action === 'view_entry') {
+		                this.viewEntry(index);
 		            } else if (action === 'remove') {
 		                this.delete(id);
 		            } else {
 		                return true;
 		            }
-
-
-
                 },
                 delete: function (id) {
                     //console.log(id);
@@ -307,6 +294,52 @@
 
 
                 },
+                viewEntry:  function (index)  {
+                    var entry = typeof this.entries[index] !== 'undefined' ? this.entries[index] : null;
+                    if (entry === null) {
+                        return false;
+                    }
+                    //console.log(entry);
+                    this.entry = entry;
+                    $('#entries-confirm-modal').modal('show');
+                },
+                confirmEntry: function () {
+                    this.entry_processing = true;
+                    var context = this;
+                    axios.put("/mfn/finance-entries/" + context.entry.id, {account: context.confirmed_account})
+                        .then(function (response) {
+                            //console.log(response);
+                            context.entry_processing = false;
+                            context.entry = response.data;
+                            //Materialize.toast('The entry was successfully confirmed.', 4000);
+                            $('#entries-table').bootstrapTable('removeByUniqueId', response.data.id);
+                            $('#entries-confirm-modal').modal('hide');
+                            return swal("Success!", "The entry was successfully confirmed.", "success");
+                        })
+                        .catch(function (error) {
+                            var message = '';
+                            //console.log(error);
+                            context.is_processing = false;
+                            if (error.response) {
+                                // The request was made and the server responded with a status code
+                                // that falls out of the range of 2xx
+                                /*var e = error.response.data.errors[0];
+                                message = e.title;*/
+                                var e = error.response;
+                                message = e.data.message;
+                            } else if (error.request) {
+                                // The request was made but no response was received
+                                // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
+                                // http.ClientRequest in node.js
+                                message = 'The request was made but no response was received';
+                            } else {
+                                // Something happened in setting up the request that triggered an Error
+                                message = error.message;
+                            }
+                            //Materialize.toast('Confirmation failed: ' + message, 4000);
+                            return swal("Confirmation Failed", message, "warning");
+                        });
+                },
                 setFutureEntry: function (type) {
                     vmDropdown.setFutureEntry(type);
                 },
@@ -316,18 +349,17 @@
             },
             mounted: function() {
             	//console.log(this.entriesCount)
-                //console.log(this.accounts)
+                //console.log(this.accounts_all)
             }
         });
-
 
     function processRows(row, index) {
     	//console.log(row)
             row.account_link = '<a href="/mfn/finance-entries?account=' + row.account.data.id + '">' + row.account.data.display_name + '</a>';
             row.created_at = moment(row.created_at).format('DD MMM, YYYY');
-            row.buttons = '<a class="btn btn-danger btn-sm remove" data-action="remove" href="#" data-id="'+row.id+'">Delete</a>';
+            row.buttons = '<a class="btn btn-danger btn-sm remove" data-action="remove" href="#" data-id="'+row.id+'" data-index="'+index+'">Delete</a>';
             if (typeof row.account.data !== 'undefined' && row.account.data.name == 'unconfirmed') {
-                row.buttons += '<a class="btn btn-warning btn-sm view" data-action="view" href="/mfn/finance-entries/' + row.id + '" >Confirm</a>'
+                row.buttons += '<a class="btn btn-warning btn-sm view" data-id="'+row.id+'" data-index="'+index+'" data-action="view_entry" href="#">Confirm</a>'
             }
             return row;
     }

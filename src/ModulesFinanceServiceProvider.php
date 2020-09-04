@@ -11,10 +11,10 @@ class ModulesFinanceServiceProvider extends ServiceProvider {
 		$this->loadViewsFrom(__DIR__.'/resources/views', 'modules-finance');
 		$this->publishes([
 			__DIR__.'/config/modules-finance.php' => config_path('modules-finance.php'),
-		], 'config');
+		], 'dorcas-modules');
 		/*$this->publishes([
 			__DIR__.'/assets' => public_path('vendor/modules-finance')
-		], 'public');*/
+		], 'dorcas-modules');*/
 	}
 
 	public function register()

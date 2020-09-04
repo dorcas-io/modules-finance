@@ -16,11 +16,11 @@
 		                <h3 class="card-title">@{{ account.display_name }} (@{{ account.entry_type.title_case() }})</h3>
 		            </div>
                     <!-- <div class="card-body">
-                        
+                        typeof row.account.data !== 'undefined' && row.account.data.name == 'unconfirmed'
                     </div> -->
 		            <div class="card-footer">
 		                <p>
-                            <a href="#" v-on:click.prevent="edit_account(index)" class="btn btn-indigo btn-sm">Edit Account</a>
+                            <a href="#" v-on:click.prevent="edit_account(index)" v-if="isEditable(account)" class="btn btn-indigo btn-sm">Edit Account</a>
                             &nbsp;
     		                <a v-bind:href="'{{ route('finance-accounts') }}/' + account.id" v-if="mode === 'topmost'" class="btn btn-cyan btn-sm">View Sub Accounts</a>
                         </p>
@@ -34,7 +34,7 @@
 		    </div>
             @include('modules-finance::modals.accounts-edit')
         </div>
-        <div class="row col-md-12" v-if="!accountsAvailable">
+        <div class="row col-md-12" v-if="!accountsAvailable && accountsParent">
             @component('layouts.blocks.tabler.empty-fullpage')
                 @slot('title')
                     Setup Finance
@@ -45,6 +45,20 @@
                 @endslot
             @endcomponent
         </div>
+        <div class="row col-md-12" v-if="!accountsAvailable && !accountsParent">
+            @component('layouts.blocks.tabler.empty-fullpage')
+                @slot('title')
+                    No Sub Accounts
+                @endslot
+                You do not have any sub-accounts
+                @slot('buttons')
+                    
+                @endslot
+            @endcomponent
+        </div>
+        @if (!empty($mode) && $mode !== "topmost")
+            @include('modules-finance::modals.accounts-sub')
+        @endif
 	</div>
 </div>
 @endsection
@@ -62,9 +76,15 @@
             computed: {
                 accountsAvailable: function() {
                     return this.accounts.length > 0;
+                },
+                accountsParent: function() {
+                    return this.mode==="topmost";
                 }
             },
             methods: {
+                isEditable: function(account) {
+                    return account.name !== 'unconfirmed'
+                },
                 edit_account: function (index) {
                     //console.log(index)
                     this.account_index = index;
@@ -191,6 +211,7 @@
             },
             mounted: function() {
                 this.enableCreateSubAccount();
+                //console.log(this.mode)
                 //console.log(this.accounts.length)
                 //console.log(this.accountsAvailable)
             }

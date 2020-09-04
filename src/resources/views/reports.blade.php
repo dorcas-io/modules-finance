@@ -77,9 +77,6 @@
                     this.config = config;
                     $('#reports-config-modal').modal('show');
                 },
-                createBalanceSheet: function () {
-
-                },
                 getReportDateText: function(report_name) {
                     if (report_name=="balance_sheet") {
                         return "Year Ending"
