@@ -36,6 +36,7 @@
 		                    <th data-field="memo" data-width="25%">Memo</th>
 		                    <th data-field="created_at" data-width="10%">Added On</th>
 		                    <th data-field="buttons">&nbsp;</th>
+                            <th data-field="generate_invoice">&nbsp;</th>
 
                         </tr>
                         </thead>
@@ -354,10 +355,11 @@
         });
 
     function processRows(row, index) {
-    	//console.log(row)
+    	console.log(row.id)
             row.account_link = '<a href="/mfn/finance-entries?account=' + row.account.data.id + '">' + row.account.data.display_name + '</a>';
             row.created_at = moment(row.created_at).format('DD MMM, YYYY');
             row.buttons = '<a class="btn btn-danger btn-sm remove" data-action="remove" href="#" data-id="'+row.id+'" data-index="'+index+'">Delete</a>';
+            row.generate_invoice = '<a class="btn btn-primary btn-sm generate_invoice" data-action="generate_incoice" href="/mfn/finance-entries/generate-invoice/' + row.id + '"  data-id="'+row.id+'" data-index="'+index+'">Generate Invoice</a>';
             if (typeof row.account.data !== 'undefined' && row.account.data.name == 'unconfirmed') {
                 row.buttons += '<a class="btn btn-warning btn-sm view" data-id="'+row.id+'" data-index="'+index+'" data-action="view_entry" href="#">Confirm</a>'
             }

@@ -18,6 +18,7 @@ Route::group(['namespace' => 'Dorcas\ModulesFinance\Http\Controllers', 'middlewa
     Route::put('/finance-accounts/{id}', 'ModulesFinanceController@accounts_update');
     Route::get('/finance-entries-search', 'ModulesFinanceController@entries_search')->name('finance-entries-search');
     Route::delete('/finance-entries/{id}', 'ModulesFinanceController@entries_delete');
+    Route::get('finance-entries/generate-invoice/{id}','ModulesFinanceController@generateInvoice');
     Route::put('/finance-entries/{id}', 'ModulesFinanceController@entries_update');
     Route::post('/finance-reports', 'ModulesFinanceController@reports_create');
     Route::post('/finance-reports/generate', 'ModulesFinanceController@reports_generate');

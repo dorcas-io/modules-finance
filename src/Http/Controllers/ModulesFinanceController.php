@@ -3,6 +3,7 @@
 namespace Dorcas\ModulesFinance\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use PDF;
 use Illuminate\Http\Request;
 use Dorcas\ModulesFinance\Models\ModulesFinance;
 use App\Dorcas\Hub\Utilities\UiResponse\UiResponse;
@@ -78,7 +79,9 @@ class ModulesFinanceController extends Controller {
             });
         }
         $this->data['mode'] = $mode;
+
         $this->data['accounts'] = !empty($accounts) ? $accounts->values() : collect([]);
+
         return view('modules-finance::accounts', $this->data);
     }
     
@@ -133,6 +136,7 @@ class ModulesFinanceController extends Controller {
             }
 
             file_put_contents('report.pdf', $response->getData());
+           
 
             return response()->download('report.pdf')->deleteFileAfterSend(true);
 
@@ -473,7 +477,9 @@ class ModulesFinanceController extends Controller {
         # get the company information
         $configuration = !empty($company->extra_data) ? $company->extra_data : [];
         $financeConfig = !empty($configuration['financeConfig']) ? $configuration['financeConfig'] : [];
-        if (count($financeConfig) <  1) {
+
+
+        if (count($financeConfig) < 1) {
             // lets create sales config
             $configuration['financeConfig'] = [];
             $configuration['financeConfig']['report_labels'] = [
@@ -533,13 +539,14 @@ class ModulesFinanceController extends Controller {
             ];
             $saveQuery = $sdk->createCompanyService()->addBodyParam('extra_data', $configuration)
                                                 ->send('post');
+                                              
             # send the request
             if (!$saveQuery->isSuccessful()) {
                 throw new \RuntimeException('Failed while setting Finance Report Labels. Please try again.');
             }
         }
-
-
+     
+      
         return view('modules-finance::reports', $this->data);
     }
     
@@ -582,15 +589,21 @@ class ModulesFinanceController extends Controller {
         
         $this->setViewUiResponse($request);
         $accounts = $this->getFinanceAccounts($sdk);
+      
         if (empty($accounts) || $accounts->count() === 0) {
             return redirect(route('finance-accounts'));
         }
 
         //create report labels if not set
         $company = $request->user()->company(true, true);
+     
+
         # get the company information
         $configuration = !empty($company->extra_data) ? $company->extra_data : [];
+       
         $financeConfig = !empty($configuration['financeConfig']) ? $configuration['financeConfig'] : [];
+       
+
         if (count($financeConfig) <  1) {
             return redirect(route('finance-accounts'));
         }
@@ -599,14 +612,17 @@ class ModulesFinanceController extends Controller {
         $parent_accounts = $accounts->filter(function ($account) {
             return empty($account->parent_account) || empty($account->parent_account['data']);
         })->values();
+       
 
         $visible_parents = $accounts->filter(function ($account) {
             return (empty($account->parent_account) || empty($account->parent_account['data'])) && $account->is_visible;
         })->values();
 
+
         $parent_accounts_ids = $parent_accounts->map(function ($account) {
             return $account->id;
         })->values()->toArray();
+
 
         $child_accounts = $accounts->filter(function ($account) use($parent_accounts_ids) {
             return !empty($account->parent_account) && !empty($account->parent_account['data']) && in_array($account->parent_account['data']['id'], $parent_accounts_ids);
@@ -624,10 +640,16 @@ class ModulesFinanceController extends Controller {
         $this->data['accounts_children_select'] =  $child_accounts_select;
         //$this->data['accounts_parents'] =  $parent_accounts_ids;
         # set the accounts to be displayed for selection
+
         $configured = $this->getFinanceReportConfigurations($sdk);
+    //    dd($configured);
+
+//        dd( $this->getFinanceReportConfigurations($sdk));
         $this->data['configurations'] =  $configured;
+
         if (!empty($id)) {
             $report = $configured->where('id', $id)->first();
+
             $this->data['report'] = $report ?: null;
         }
 
@@ -656,8 +678,10 @@ class ModulesFinanceController extends Controller {
         try {
             $company = $request->user()->company(true, true);
             # get the company information
+          
 
             $labels = $this->report_label_get($request, $sdk);
+            
             
             /*$query = $sdk->createFinanceResource()->addBodyParam('report_name', $request->report)
                                                     ->addBodyParam('accounts', $request->accounts);
@@ -688,11 +712,12 @@ class ModulesFinanceController extends Controller {
 
             $configuration = !empty($company->extra_data) ? $company->extra_data : [];
             $financeConfig = !empty($configuration['financeConfig']) ? $configuration['financeConfig'] : [];
-
+       
             // lets update finance config
             $reportLabels = !empty($financeConfig['report_labels']) ? $financeConfig['report_labels'] : [];
             $reportLabel = $reportLabels[$request->report];
-
+           
+           
             //loop config update
             foreach ($reportLabel as $key => $value) {
                 $label_post_id = "label_box-" . $key;
@@ -702,16 +727,11 @@ class ModulesFinanceController extends Controller {
             $configuration['financeConfig']['report_labels'][$request->report] = $reportLabel;
             $saveQuery = $sdk->createCompanyService()->addBodyParam('extra_data', $configuration)
                                                 ->send('post');
+                                            
             # send the request
             if (!$saveQuery->isSuccessful()) {
                 throw new \RuntimeException('Failed while updating Sales Product Variant Types. Please try again.');
             }
-
-
-
-
-
-
 
 
             Cache::forget('finance.report_configurations.'.$company->id);
@@ -785,11 +805,53 @@ class ModulesFinanceController extends Controller {
     }
 
 
+    public function generateInvoice(Sdk $sdk, string $id)
+    {
+        $accounts = $this->getFinanceAccounts($sdk);
+        
+        # get all accounts - first
+        if (empty($accounts) || $accounts->count() === 0) {
+            return redirect(route('apps.finance'));
+        }
+        $this->data['accounts'] = $accounts->filter(function ($account) {
+            return empty($account->parent_account) && empty($account->parent_account['data']);
+        });
+    
+        $query = $sdk->createFinanceResource()->addQueryArgument('include', 'account')
+                                                ->send('GET', ['entries/generate_invoice', $id]);
+
+        # get the response
+        if (!$query->isSuccessful()) {
+            return redirect()->route('apps.finance.entries');
+        }
+
+    
+        $this->data['entry'] = $entry = $query->getData(true);
+        
+        $invoiceData = $query->getData();
+        $id = $invoiceData['id'];
+        // dd( $invoiceData['account']['data']['parent_account']['data']['display_name']);
+
+        #load information into pdf
+    
+        $pdf = PDF::loadView('modules-finance::pdfview', compact('invoiceData' ,'id'));
+
+        return $download =  $pdf->download($invoiceData['account']['data']['parent_account']['data']['display_name'].'_report.pdf');
+      
+ 
+    }
+
+
 
     public function reports_create(Request $request, Sdk $sdk)
     {
     
     }
+
+//    public function getFinanceReportConfigurations($sdk)
+//    {
+//        dd($sdk);
+//    }
 
     public function creator(Request $request)
     {

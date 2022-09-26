@@ -46,6 +46,18 @@
 		                        <label for="created_at">Transaction Date</label>
 							</div>
 						</div>
+						<div class="row">
+							<div class="form-group col-md-12">
+									<select class="form-control" id="currency" name="currency" required>
+										<option>Select An Option</option>
+										<option value="bank">Bank</option>
+										<option value="cash">Cash</option>
+										<option value="transfer">Transfer</option>
+										<option value="petty cash">Petty Cash</option>
+									</select>
+									<label for="created_at">Payment Source Type</label>
+							</div>
+						</div>
 					</fieldset>
                     <input type="hidden" name="source_type" id="source_type" value="manual">
                     <input type="hidden" name="source_info" id="source_info" value="Hub Entry">
