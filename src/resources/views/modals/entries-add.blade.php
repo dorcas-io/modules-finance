@@ -48,7 +48,7 @@
 						</div>
 						<div class="row">
 							<div class="form-group col-md-12">
-									<select class="form-control" id="currency" name="currency" required>
+									<select class="form-control" id="payment_type" name="payment_type" required>
 										<option>Select An Option</option>
 										<option value="bank">Bank</option>
 										<option value="cash">Cash</option>
