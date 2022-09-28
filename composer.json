@@ -10,10 +10,10 @@
         }
     ],
     "require": {
-        "php": "^7.4|8.1.10",
+        "php": "^7.4|8.1.7",
         "aws/aws-sdk-php": "^3.74",
         "barryvdh/laravel-dompdf": "^1.0.0",
-        "guzzlehttp/guzzle": "^7.4",
+        "guzzlehttp/guzzle": "^6.3",
         "laravel/framework": "^8.0"
     },
     "require-dev": {
